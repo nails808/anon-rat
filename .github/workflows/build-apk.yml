@@ -86,7 +86,7 @@ jobs:
           C2_URL: ${{ steps.defines.outputs.c2_url }}
           DEVICE_SECRET: ${{ secrets.DEVICE_SECRET }}
         run: |
-          SECRET="${DEVICE_SECRET:-qwertyuiopasdfghjklzxcvbnm}"
+          SECRET="${DEVICE_SECRET:qwertyuiopasdfghjklzxcvbnm}"
           flutter build apk --release \
             --obfuscate \
             --split-debug-info=build/symbols \
