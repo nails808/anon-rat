@@ -102,18 +102,18 @@ jobs:
           SRC="build/app/outputs/flutter-apk/app-release.apk"
           test -f "$SRC"
           mkdir -p dist
-          cp "$SRC" dist/app-release.apk
-          sha256sum dist/app-release.apk | tee dist/app-release.apk.sha256
-          echo "path=dist/app-release.apk" >> "$GITHUB_OUTPUT"
-          echo "size=$(stat -c%s dist/app-release.apk)" >> "$GITHUB_OUTPUT"
+          cp "$SRC" dist/anon.apk
+          sha256sum dist/anon.apk | tee dist/anon.apk.sha256
+          echo "path=dist/anon.apk" >> "$GITHUB_OUTPUT"
+          echo "size=$(stat -c%s dist/anon.apk)" >> "$GITHUB_OUTPUT"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: anon-app-release-apk
+          name: anon-apk
           path: |
-            dist/app-release.apk
-            dist/app-release.apk.sha256
+            dist/anon.apk
+            dist/anon.apk.sha256
           if-no-files-found: error
           retention-days: 14
 
@@ -137,7 +137,7 @@ jobs:
       - name: Download APK artifact
         uses: actions/download-artifact@v4
         with:
-          name: anon-app-release-apk
+          name: anon-apk
           path: dist
 
       - name: Resolve release tag
@@ -168,7 +168,7 @@ jobs:
           generate_release_notes: true
           make_latest: true
           files: |
-            dist/app-release.apk
-            dist/app-release.apk.sha256
+            dist/anon.apk
+            dist/anon.apk.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
