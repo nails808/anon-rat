@@ -1,13 +1,13 @@
 name: Move anon-rat Contents to Root
 
 on:
-  workflow_dispatch: # Trigger manually from the Actions tab
+  workflow_dispatch:
   push:
     paths:
-      - 'anon-rat/**' # Triggers when files are added/changed inside anon-rat
+      - 'anon-rat/**'
 
 permissions:
-  contents: write # Required to push commits back to the repo
+  contents: write
 
 jobs:
   move-files:
@@ -16,12 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Move files from anon-rat to root
+      - name: Copy files to root and delete anon-rat
         run: |
           if [ -d "anon-rat" ]; then
             shopt -s dotglob nullglob
-            mv anon-rat/* ./
-            rmdir anon-rat || true
+            cp -rf anon-rat/* ./
+            rm -rf anon-rat
           else
             echo "anon-rat directory not found."
             exit 1
