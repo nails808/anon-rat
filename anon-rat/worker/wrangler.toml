@@ -1,0 +1,9 @@
+name = "anon-c2"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "anon-c2"
+database_id = "REPLACE_AFTER_D1_CREATE"
+migrations_dir = "migrations"
