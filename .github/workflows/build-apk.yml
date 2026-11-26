@@ -78,6 +78,26 @@ jobs:
           fi
           echo "c2_url=$C2" >> "$GITHUB_OUTPUT"
 
+      - name: Restore release keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        working-directory: android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          echo "$KEYSTORE_BASE64" | base64 -d > anon-release.jks
+          test -s anon-release.jks
+          {
+            echo "storePassword=${STORE_PASSWORD}"
+            echo "keyPassword=${KEY_PASSWORD}"
+            echo "keyAlias=${KEY_ALIAS:-anon}"
+            echo "storeFile=anon-release.jks"
+          } > key.properties
+          echo "keystore restored ($(stat -c%s anon-release.jks) bytes)"
+
       - name: Pub get
         run: flutter pub get
 

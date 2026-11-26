@@ -1,4 +1,5 @@
-storePassword=qwertyuiopasdfghjklzxcvbnm
-keyPassword=qwertyuiopasdfghjklzxcvbnm
+# Copy to key.properties for local release builds (never commit key.properties or the keystore).
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
 keyAlias=anon
-storeFile=../keystore/anon-release.jks
+storeFile=anon-release.jks
