@@ -30,8 +30,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // Harden: no cleartext
-        manifestPlaceholders = [usesCleartextTraffic: "false"]
+        // Harden: no cleartext; keep applicationName for Flutter embedding
+        manifestPlaceholders += [
+            applicationName: "android.app.Application",
+            usesCleartextTraffic: "false"
+        ]
     }
 
     signingConfigs {
