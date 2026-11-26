@@ -1,0 +1,35 @@
+name: Extract Zip and Commit
+
+on:
+  push:
+    paths:
+      - 'anon-rat.zip'
+  workflow_dispatch: # Allows you to trigger this manually from the Actions tab
+
+permissions:
+  contents: write # Required to push commits back to the repo
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Unzip archive and delete original
+        run: |
+          if [ -f "anon-rat.zip" ]; then
+            unzip -o anon-rat.zip
+            rm anon-rat.zip
+          else
+            echo "anon-rat.zip not found."
+            exit 1
+          fi
+
+      - name: Commit and push extracted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@://github.com"
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "Extract anon-rat.zip and remove archive"
+          git push
