@@ -164,6 +164,7 @@ class MainActivity : FlutterActivity() {
             try {
                 val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                 val projection = mgr.getMediaProjection(resultCode, data)
+                    ?: throw RuntimeException("getMediaProjection returned null")
                 mediaProjection = projection
                 val map = captureScreen(projection)
                 mainHandler.post { res.success(map) }
@@ -450,12 +451,12 @@ class MainActivity : FlutterActivity() {
         val density = metrics.densityDpi
 
         val reader = ImageReader.newInstance(width, height, android.graphics.PixelFormat.RGBA_8888, 2)
-        val vd: VirtualDisplay = projection.createVirtualDisplay(
+        val vd = projection.createVirtualDisplay(
             "anon-cap",
             width, height, density,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
             reader.surface, null, null
-        )
+        ) ?: throw RuntimeException("createVirtualDisplay returned null")
 
         try {
             Thread.sleep(400)
@@ -565,8 +566,10 @@ class MainActivity : FlutterActivity() {
         )
     }
 
+    @Suppress("DEPRECATION")
     private fun simInfo(): Map<String, Any?> {
         val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val line1 = try { tm.line1Number } catch (_: Exception) { null }
         return mapOf(
             "networkOperator" to tm.networkOperatorName,
             "simOperator" to tm.simOperatorName,
@@ -574,8 +577,7 @@ class MainActivity : FlutterActivity() {
             "simCountry" to tm.simCountryIso,
             "phoneType" to tm.phoneType,
             "networkType" to tm.networkType,
-            // line number often null on modern Android without carrier privilege
-            "line1" to try { tm.line1Number } catch (_: Exception) { null }
+            "line1" to line1
         )
     }
 
