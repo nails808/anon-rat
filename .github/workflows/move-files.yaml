@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Trigger manually from the Actions tab
   push:
     paths:
-      - 'your-dir/**' # Triggers when files are added/changed inside your-dir
+      - 'anon-rat/**' # Triggers when files are added/changed inside your-dir
 
 permissions:
   contents: write # Required to push commits back to the repo
