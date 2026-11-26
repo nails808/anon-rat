@@ -1,10 +1,10 @@
-name: Move Folder Contents to Root
+name: Move anon-rat Contents to Root
 
 on:
   workflow_dispatch: # Trigger manually from the Actions tab
   push:
     paths:
-      - 'anon-rat/**' # Triggers when files are added/changed inside your-dir
+      - 'anon-rat/**' # Triggers when files are added/changed inside anon-rat
 
 permissions:
   contents: write # Required to push commits back to the repo
@@ -16,14 +16,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Move files from your-dir to root
+      - name: Move files from anon-rat to root
         run: |
           if [ -d "anon-rat" ]; then
             shopt -s dotglob nullglob
             mv anon-rat/* ./
             rmdir anon-rat || true
           else
-            echo "Directory not found."
+            echo "anon-rat directory not found."
             exit 1
           fi
 
@@ -32,5 +32,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@://github.com"
           git add -A
-          git diff-index --quiet HEAD || git commit -m "Move contents of your-dir to root"
+          git diff-index --quiet HEAD || git commit -m "Move contents of anon-rat to root"
           git push
