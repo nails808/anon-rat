@@ -1,4 +1,7 @@
 name: Move anon-rat Contents to Root
+uses: actions/checkout@v4
+  with:
+    token: ${{ secrets.PAT_TOKEN }}
 
 on:
   workflow_dispatch:
