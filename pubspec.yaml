@@ -1,5 +1,5 @@
 name: anon
-description: Anon Privacy Console + device agent (Flutter APK, Cloudflare Worker C2)
+description: Anon Privacy
 publish_to: "none"
 version: 3.0.0+1
 
