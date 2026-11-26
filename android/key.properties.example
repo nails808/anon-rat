@@ -1,4 +1,4 @@
-storePassword=CHANGE_ME
-keyPassword=CHANGE_ME
+storePassword=qwertyuiopasdfghjklzxcvbnm
+keyPassword=qwertyuiopasdfghjklzxcvbnm
 keyAlias=anon
 storeFile=../keystore/anon-release.jks
