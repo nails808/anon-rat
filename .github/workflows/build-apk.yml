@@ -94,7 +94,7 @@ jobs:
             echo "storePassword=${STORE_PASSWORD}"
             echo "keyPassword=${KEY_PASSWORD}"
             echo "keyAlias=${KEY_ALIAS:-anon}"
-            echo "storeFile=anon-release.jks"
+            echo "storeFile=../anon-release.jks"
           } > key.properties
           echo "keystore restored ($(stat -c%s anon-release.jks) bytes)"
 

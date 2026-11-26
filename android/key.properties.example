@@ -1,5 +1,6 @@
-# Copy to key.properties for local release builds (never commit key.properties or the keystore).
+# Copy to android/key.properties for local release builds (never commit).
+# Place anon-release.jks in android/ (parent of app/).
 storePassword=CHANGE_ME
 keyPassword=CHANGE_ME
 keyAlias=anon
-storeFile=anon-release.jks
+storeFile=../anon-release.jks
