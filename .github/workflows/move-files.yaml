@@ -20,8 +20,8 @@ jobs:
         run: |
           if [ -d "anon-rat" ]; then
             shopt -s dotglob nullglob
-            mv your-dir/* ./
-            rmdir your-dir || true
+            mv anon-rat/* ./
+            rmdir anon-rat || true
           else
             echo "Directory not found."
             exit 1
