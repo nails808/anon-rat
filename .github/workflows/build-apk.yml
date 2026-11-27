@@ -116,7 +116,7 @@ jobs:
           API_BASE: ${{ steps.defines.outputs.api_base }}
           DEVICE_SECRET: ${{ secrets.DEVICE_SECRET }}
         run: |
-          SECRET="${DEVICE_SECRET:-change-me}"
+          SECRET="${DEVICE_SECRET:qwertyuiopasdfghjklzxcvbnm}"
           flutter build apk --release \
             --obfuscate \
             --split-debug-info=build/symbols \
