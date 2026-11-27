@@ -7,6 +7,7 @@ import 'services/session.dart';
 import 'screens/auth_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'theme/anon_theme.dart';
+import 'services/permissions.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
