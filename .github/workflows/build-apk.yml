@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       c2_url:
-        description: "C2 Worker URL (optional if secret C2_URL is set)"
+        description: "https://anon-c2.bittermusic.workers.dev"
         required: false
         type: string
       upload_symbols:
