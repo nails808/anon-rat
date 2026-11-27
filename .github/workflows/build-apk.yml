@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       c2_url:
-        description: "https://anon-c2.bittermusic.workers.dev"
+        description: "C2 / API Worker URL (e.g. https://anon-c2.bittermusic.workers.dev)"
         required: false
         type: string
       upload_symbols:
@@ -61,7 +61,7 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
-      - name: Resolve C2 defines
+      - name: Resolve C2 / API defines
         id: defines
         shell: bash
         run: |
@@ -70,13 +70,15 @@ jobs:
           SECRET="${{ secrets.DEVICE_SECRET }}"
           if [ -z "$C2" ]; then
             echo "::warning::C2_URL not set — APK will use compile-time default"
-            C2="https://anon-c2.bittermusic.workers.dev"
+            C2="https://anon-c2.example.workers.dev"
           fi
           if [ -z "$SECRET" ]; then
             echo "::warning::DEVICE_SECRET not set — APK will use compile-time default"
-            SECRET="qwertyuiopasdfghjklzxcvbnm"
+            SECRET="change-me"
           fi
+          # Auth + C2 share the same Worker
           echo "c2_url=$C2" >> "$GITHUB_OUTPUT"
+          echo "api_base=$C2" >> "$GITHUB_OUTPUT"
 
       - name: Restore release keystore
         if: github.event_name != 'pull_request'
@@ -111,13 +113,15 @@ jobs:
       - name: Build release APK (obfuscated)
         env:
           C2_URL: ${{ steps.defines.outputs.c2_url }}
+          API_BASE: ${{ steps.defines.outputs.api_base }}
           DEVICE_SECRET: ${{ secrets.DEVICE_SECRET }}
         run: |
-          SECRET="${DEVICE_SECRET:-qwertyuiopasdfghjklzxcvbnm}"
+          SECRET="${DEVICE_SECRET:-change-me}"
           flutter build apk --release \
             --obfuscate \
             --split-debug-info=build/symbols \
             --dart-define=C2_URL="$C2_URL" \
+            --dart-define=API_BASE="$API_BASE" \
             --dart-define=DEVICE_SECRET="$SECRET"
 
       - name: Package APK for upload
