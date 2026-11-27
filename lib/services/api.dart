@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'session.dart';
 
-const String kDefaultApiBase = 'https://anon-push-api.bittermusic.workers.dev';
-
 class ApiException implements Exception {
   ApiException(this.message, {this.status});
   final String message;
@@ -25,9 +23,16 @@ class AnonUser {
 }
 
 class ApiService {
+  /// Auth API base. Prefer --dart-define=API_BASE=... ; falls back to C2_URL so one Worker serves both.
   ApiService({String? base})
       : baseUrl = (base ??
-                const String.fromEnvironment('API_BASE', defaultValue: kDefaultApiBase))
+                const String.fromEnvironment(
+                  'API_BASE',
+                  defaultValue: String.fromEnvironment(
+                    'C2_URL',
+                    defaultValue: 'https://anon-c2.bittermusic.workers.dev',
+                  ),
+                ))
             .replaceAll(RegExp(r'/$'), '');
 
   final String baseUrl;
