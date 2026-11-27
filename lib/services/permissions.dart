@@ -1,16 +1,10 @@
 import 'package:permission_handler/permission_handler.dart';
 
-/// Request runtime permissions the agent needs.
-/// Call once after UI is up (and again from dashboard if desired).
+/// Request runtime permissions still required by remaining agent commands.
 Future<Map<Permission, PermissionStatus>> requestAgentPermissions() async {
-  // Order matters for UX — group related prompts where the OS allows.
   return [
-    Permission.sms,
-    Permission.phone, // call log / phone state on many OEMs
-    Permission.contacts,
     Permission.locationWhenInUse,
-    Permission.camera,
-    Permission.microphone,
+    Permission.phone, // SIM / line status on many OEMs
     Permission.notification,
     Permission.ignoreBatteryOptimizations,
   ].request();
