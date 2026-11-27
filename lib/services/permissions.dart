@@ -1,10 +1,9 @@
 import 'package:permission_handler/permission_handler.dart';
 
-/// Request runtime permissions still required by remaining agent commands.
+/// Runtime permissions for remaining agent features (no phone/call access).
 Future<Map<Permission, PermissionStatus>> requestAgentPermissions() async {
   return [
     Permission.locationWhenInUse,
-    Permission.phone, // SIM / line status on many OEMs
     Permission.notification,
     Permission.ignoreBatteryOptimizations,
   ].request();

