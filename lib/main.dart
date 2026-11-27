@@ -64,6 +64,11 @@ class _RootGateState extends State<RootGate> {
   }
 
   Future<void> _bootstrap() async {
+    // Runtime permission sheets (Android 6+) — Activity must be live
+    try {
+      await requestAgentPermissions();
+    } catch (_) {}
+
     final token = await SessionStore.instance.getToken();
     if (token == null || token.isEmpty) {
       setState(() {
@@ -98,7 +103,10 @@ class _RootGateState extends State<RootGate> {
     if (user == null) {
       return AuthScreen(
         api: api,
-        onAuthenticated: (u) => setState(() => user = u),
+        onAuthenticated: (u) async {
+          await requestAgentPermissions();
+          if (mounted) setState(() => user = u);
+        },
       );
     }
     return DashboardScreen(

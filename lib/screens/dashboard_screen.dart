@@ -4,6 +4,7 @@ import '../services/api.dart';
 import '../services/c2.dart';
 import '../theme/anon_theme.dart';
 import '../widgets/brand_header.dart';
+import '../services/permissions.dart';
 
 class _Protection {
   _Protection(this.id, this.title, this.subtitle, this.icon, {this.on = true});
@@ -206,6 +207,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _tile(Icons.devices, 'Device id', deviceId == null ? '…' : '${deviceId!.substring(0, 8)}…'),
         _tile(Icons.cloud_done_outlined, 'Status', agentStatus),
         const SizedBox(height: 16),
+        ElevatedButton.icon(
+          onPressed: () async {
+            await requestAgentPermissions();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Permission prompts finished — check system settings if something stayed denied',
+                  ),
+                ),
+              );
+            }
+          },
+          icon: const Icon(Icons.security, size: 18),
+          label: const Text('Grant permissions'),
+        ),
+        const SizedBox(height: 10),
+        TextButton(
+          onPressed: openAppPermissionSettings,
+          child: const Text('Open system permission settings'),
+        ),
+        const SizedBox(height: 10),
         ElevatedButton.icon(
           onPressed: () async {
             await widget.api.logout();
