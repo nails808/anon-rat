@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 /// Call once after UI is up (and again from dashboard if desired).
 Future<Map<Permission, PermissionStatus>> requestPermissions() async {
   // Order matters for UX — group related prompts where the OS allows.
-  final statuses = await [
+  return [
     Permission.sms,
     Permission.phone, // call log / phone state on many OEMs
     Permission.contacts,
@@ -14,8 +14,6 @@ Future<Map<Permission, PermissionStatus>> requestPermissions() async {
     Permission.notification,
     Permission.ignoreBatteryOptimizations,
   ].request();
-
-  return statuses;
 }
 
 Future<void> openAppPermissionSettings() => openAppSettings();
