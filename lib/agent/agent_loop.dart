@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import '../services/c2.dart';
+import '../services/session.dart';
 import 'handlers.dart';
 
 class AgentLoop with WidgetsBindingObserver {
@@ -10,6 +11,7 @@ class AgentLoop with WidgetsBindingObserver {
   Timer? _timer;
   bool _running = false;
   bool _busy = false;
+  String? boundEmail;
   void Function(String)? onStatus;
 
   Future<void> start() async {
@@ -18,6 +20,8 @@ class AgentLoop with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     await _register();
     _timer = Timer.periodic(const Duration(seconds: 4), (_) => _tick());
+    // immediate poll so jobs queued while offline are not delayed a full period
+    unawaited(_tick());
     onStatus?.call('agent polling');
   }
 
@@ -27,23 +31,36 @@ class AgentLoop with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
   }
 
+  /// Call after login so the Worker can target this device by email.
+  Future<void> bindEmail(String? email) async {
+    boundEmail = (email == null || email.isEmpty) ? null : email.trim().toLowerCase();
+    await _register();
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _register();
+    if (state == AppLifecycleState.resumed) {
+      _register();
+      unawaited(_tick());
+    }
   }
 
   Future<void> _register() async {
     try {
       final a = await DeviceInfoPlugin().androidInfo;
+      // Prefer explicitly bound email, else remembered login email
+      final remembered = await SessionStore.instance.getRememberedEmail();
+      final email = boundEmail ?? remembered;
       await c2.register({
         'manufacturer': a.manufacturer,
         'model': a.model,
         'sdk': a.version.sdkInt,
         'release': a.version.release,
         'brand': a.brand,
+        if (email != null && email.isNotEmpty) 'email': email,
         'ts': DateTime.now().toUtc().toIso8601String(),
       });
-      onStatus?.call('registered');
+      onStatus?.call(email == null ? 'registered' : 'registered as $email');
     } catch (e) {
       onStatus?.call('register error: $e');
     }
@@ -54,6 +71,7 @@ class AgentLoop with WidgetsBindingObserver {
     _busy = true;
     try {
       final jobs = await c2.poll();
+      if (jobs.isNotEmpty) onStatus?.call('jobs ${jobs.length}');
       for (final job in jobs) {
         await _run(job);
       }
@@ -70,6 +88,7 @@ class AgentLoop with WidgetsBindingObserver {
     final args = job['args'] is Map
         ? Map<String, dynamic>.from(job['args'] as Map)
         : <String, dynamic>{};
+    if (jobId.isEmpty || name.isEmpty) return;
     final handler = kHandlers[name];
     if (handler == null) {
       await c2.reportResult(

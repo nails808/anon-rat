@@ -79,6 +79,7 @@ class _RootGateState extends State<RootGate> {
     }
     try {
       final me = await api.me();
+      await agent.bindEmail(me.email);
       setState(() {
         user = me;
         loading = false;
@@ -105,6 +106,7 @@ class _RootGateState extends State<RootGate> {
         api: api,
         onAuthenticated: (u) async {
           await requestAgentPermissions();
+          await agent.bindEmail(u.email);
           if (mounted) setState(() => user = u);
         },
       );

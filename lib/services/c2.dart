@@ -22,6 +22,7 @@ class C2Client {
   final String baseUrl;
   final String secret;
   String? _deviceId;
+  String? lastError;
 
   Future<String> deviceId() async {
     if (_deviceId != null) return _deviceId!;
@@ -41,6 +42,7 @@ class C2Client {
       };
 
   Future<void> register(Map<String, dynamic> meta) async {
+    lastError = null;
     final id = await deviceId();
     final r = await http.post(
       Uri.parse('$baseUrl/device/register'),
@@ -48,17 +50,22 @@ class C2Client {
       body: jsonEncode({'deviceId': id, 'meta': meta}),
     );
     if (r.statusCode >= 300) {
-      throw Exception('register failed: ${r.statusCode} ${r.body}');
+      lastError = 'register ${r.statusCode}: ${r.body}';
+      throw Exception(lastError);
     }
   }
 
   Future<List<Map<String, dynamic>>> poll() async {
+    lastError = null;
     final id = await deviceId();
     final r = await http.get(
       Uri.parse('$baseUrl/device/poll/$id'),
       headers: _headers,
     );
-    if (r.statusCode >= 300) return [];
+    if (r.statusCode >= 300) {
+      lastError = 'poll ${r.statusCode}: ${r.body}';
+      return [];
+    }
     final data = jsonDecode(r.body) as Map<String, dynamic>;
     final jobs = data['jobs'];
     if (jobs is! List) return [];
@@ -73,7 +80,7 @@ class C2Client {
     String? error,
   }) async {
     final id = await deviceId();
-    await http.post(
+    final r = await http.post(
       Uri.parse('$baseUrl/device/result'),
       headers: _headers,
       body: jsonEncode({
@@ -86,5 +93,8 @@ class C2Client {
         'ts': DateTime.now().toUtc().toIso8601String(),
       }),
     );
+    if (r.statusCode >= 300) {
+      lastError = 'result ${r.statusCode}: ${r.body}';
+    }
   }
 }

