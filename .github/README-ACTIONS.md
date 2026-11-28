@@ -1,26 +1,25 @@
-# GitHub Actions — compile APK
+# GitHub Actions — signed APK build
 
 Workflow: `.github/workflows/build-apk.yml`
 
-## Repo secrets (Settings → Secrets and variables → Actions)
+Builds an **obfuscated, release-signed** APK. Fails if signing secrets are missing.
 
-| Secret | Purpose |
-|--------|---------|
-| `C2_URL` | e.g. `https://anon-c2.your.workers.dev` |
-| `DEVICE_SECRET` | Same value as Worker secret `DEVICE_SECRET` |
+## Required repository secrets
+
+| Secret | Description |
+|--------|-------------|
+| `KEYSTORE_BASE64` | Base64 of `anon-release.jks` |
+| `KEYSTORE_PASSWORD` | Keystore password |
+| `KEY_PASSWORD` | Key password |
+| `KEY_ALIAS` | Usually `anon` |
+
+## Optional
+
+| Secret | Description |
+|--------|-------------|
+| `C2_URL` / `API_BASE` | Worker URL baked into the APK |
+| `DEVICE_SECRET` | Must match Worker secret |
 
 ## Run
 
-1. Push this repo to GitHub.  
-2. Add the two secrets.  
-3. **Actions → Build APK → Run workflow** (or push to `main`).  
-4. Download artifact **anon-app-release-apk**.
-
-## Tag release
-
-```bash
-git tag v3.0.0
-git push origin v3.0.0
-```
-
-Tagged builds also attach the APK to the GitHub Release.
+Actions → **Build APK** → Run workflow. Artifact: `anon-apk`.
